@@ -26,7 +26,7 @@ public class SecurityConfig {
         return http
                 .csrf().disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/auth/**", "/api/justificatifs/upload").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .userDetailsService(userDetailsService)

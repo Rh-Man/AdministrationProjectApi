@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import com.example.adminapi.enums.StatutDemande;
 import com.example.adminapi.enums.TypeDocument;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Data
@@ -29,6 +30,7 @@ public class Demande {
     private RendezVous rendezVous;
 
     @OneToMany(mappedBy = "demande", cascade = CascadeType.ALL)
+    @JsonIgnore 
     private List<Justificatif> justificatifs;
 
     @OneToOne(mappedBy = "demande", cascade = CascadeType.ALL)

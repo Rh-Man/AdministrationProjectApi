@@ -40,23 +40,23 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-public ResponseEntity<?> login(@RequestBody AuthRequest request) {
-    System.out.println("Login called: " + request.getEmail());
+    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+        System.out.println("Login called: " + request.getEmail());
 
-    // Authentifie l'utilisateur
-    try {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
-    } catch (AuthenticationException e) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email ou mot de passe invalide");
+        // Authentifie l'utilisateur
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+            );
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email ou mot de passe invalide");
+        }
+
+        // Charge les détails pour générer le token
+        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
+        String token = jwtService.generateToken(userDetails);
+
+        return ResponseEntity.ok(new AuthResponse(token));
     }
-
-    // Charge les détails pour générer le token
-    UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-    String token = jwtService.generateToken(userDetails);
-
-    return ResponseEntity.ok(new AuthResponse(token));
-}
 
 }
