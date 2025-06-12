@@ -1,5 +1,7 @@
 package com.example.adminapi.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -17,6 +19,7 @@ public class Justificatif {
 
     @ManyToOne
     @JoinColumn(name = "demande_id")
+    @JsonIgnoreProperties("justificatifs") // ignore le champ "justificatifs" dans demande
     private Demande demande;
 }
 

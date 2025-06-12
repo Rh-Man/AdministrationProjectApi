@@ -1,14 +1,24 @@
 package com.example.adminapi.controller;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.example.adminapi.entity.Demande;
 import com.example.adminapi.entity.Justificatif;
 import com.example.adminapi.repository.DemandeRepository;
 import com.example.adminapi.repository.JustificatifRepository;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/justificatifs")
@@ -65,4 +75,40 @@ public class JustificatifController {
         justificatifRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    // Methode qui permet d'upload les documents justificatif
+    @PostMapping("/upload")
+    public ResponseEntity<?> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("demandeId") Long demandeId) {
+
+        try {
+            Demande demande = demandeRepository.findById(demandeId)
+                    .orElseThrow(() -> new RuntimeException("Demande non trouvée"));
+
+            // Créer le dossier uploads s’il n’existe pas
+            String uploadDir = "uploads/";
+            File dir = new File(uploadDir);
+            if (!dir.exists()) dir.mkdirs();
+
+            // Générer un nom de fichier unique
+            String nomUnique = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Path path = Paths.get(uploadDir + nomUnique);
+            Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
+
+            // Créer et enregistrer le justificatif
+            Justificatif justificatif = new Justificatif();
+            justificatif.setNom(file.getOriginalFilename());
+            justificatif.setCheminFichier(path.toString());
+            justificatif.setDemande(demande);
+
+            justificatifRepository.save(justificatif);
+
+            return ResponseEntity.ok("Fichier uploadé avec succès !");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur lors de l’upload : " + e.getMessage());
+        }
+    }
+
 }
